@@ -1,0 +1,118 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("user") // admin, user
+  createdAt    DateTime @default(now())
+}
+
+model Item {
+  id        Int      @id @default(autoincrement())
+  sku       String   @unique
+  name      String
+  unit      String   @default("pcs")
+  barcode   String?  @unique
+  minStock  Int?     
+  createdAt DateTime @default(now())
+
+  stocks    Stock[]
+  receipts  ReceiptLine[]
+  dispatches DispatchLine[]
+  stocktakes StocktakeLine[]
+}
+
+model Location {
+  id           Int             @id @default(autoincrement())
+  code         String          @unique
+  description  String?
+  createdAt    DateTime        @default(now())
+
+  // back-relations
+  stocks       Stock[]
+  stocktakes   StocktakeLine[]
+  receiptLines ReceiptLine[]   
+  dispatchLines DispatchLine[] 
+}
+
+
+model Stock {
+  id         Int      @id @default(autoincrement())
+  item       Item     @relation(fields: [itemId], references: [id])
+  itemId     Int
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  quantity   Int      @default(0)
+
+  @@unique([itemId, locationId])
+}
+
+model Receipt {
+  id        Int      @id @default(autoincrement())
+  number    String   @unique
+  supplier  String?
+  status    String   @default("draft") // draft, posted
+  date      DateTime @default(now())
+  lines     ReceiptLine[]
+  createdAt DateTime @default(now())
+}
+
+model ReceiptLine {
+  id        Int      @id @default(autoincrement())
+  receipt   Receipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  receiptId Int
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    Int
+  location  Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  qty       Int
+}
+
+model Dispatch {
+  id        Int      @id @default(autoincrement())
+  number    String   @unique
+  customer  String?
+  status    String   @default("draft") // draft, posted
+  date      DateTime @default(now())
+  lines     DispatchLine[]
+  createdAt DateTime @default(now())
+}
+
+model DispatchLine {
+  id         Int      @id @default(autoincrement())
+  dispatch   Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  dispatchId Int
+  item       Item     @relation(fields: [itemId], references: [id])
+  itemId     Int
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  qty        Int
+}
+
+model Stocktake {
+  id        Int      @id @default(autoincrement())
+  number    String   @unique
+  status    String   @default("open") // open, counted, posted
+  date      DateTime @default(now())
+  lines     StocktakeLine[]
+  createdAt DateTime @default(now())
+}
+
+model StocktakeLine {
+  id          Int      @id @default(autoincrement())
+  stocktake   Stocktake @relation(fields: [stocktakeId], references: [id], onDelete: Cascade)
+  stocktakeId Int
+  item        Item     @relation(fields: [itemId], references: [id])
+  itemId      Int
+  location    Location @relation(fields: [locationId], references: [id])
+  locationId  Int
+  countedQty  Int
+}

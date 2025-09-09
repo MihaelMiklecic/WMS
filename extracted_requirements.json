@@ -1,0 +1,8 @@
+{
+  "extracted_on": "2025-09-03T19:48:13.281347",
+  "items": [
+    "Opis treba sadržavati:\n* nazive dijaloga i njhovu svrhu unutar aplikacije (čemu služe)",
+    "Opis treba sadržavati:\n* koji su sve jezici podržani\n* koliko dijaloga je prevedeno",
+    "Opis treba sadržavati:\n* na koji se način provodi autentifikacija i autorizacija, te koje ovlasti ima svaki od korisnika"
+  ]
+}
