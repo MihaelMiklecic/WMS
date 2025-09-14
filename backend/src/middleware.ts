@@ -1,8 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
+export interface JwtClaims {
+  id: number;
+  email: string;
+  role: "admin" | "user";
+  perms?: string[];
+}
+
 export interface AuthRequest extends Request {
-  user?: { id: number; role: string; email: string };
+  user?: JwtClaims;
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
@@ -12,10 +19,10 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   }
   try {
     const token = header.split(" ")[1];
-    const payload = jwt.verify(token, process.env.JWT_SECRET as string) as any;
-    req.user = { id: payload.id, role: payload.role, email: payload.email };
+    const payload = jwt.verify(token, process.env.JWT_SECRET as string) as JwtClaims;
+    req.user = payload;
     next();
-  } catch (e) {
+  } catch {
     return res.status(401).json({ error: "Invalid token" });
   }
 }
@@ -23,4 +30,13 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
 export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
   if (req.user?.role !== "admin") return res.status(403).json({ error: "Admin only" });
   next();
+}
+
+export function requirePerm(perm: string) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+    if (req.user.role === "admin") return next();
+    if (req.user.perms?.includes(perm)) return next();
+    return res.status(403).json({ error: `Missing permission: ${perm}` });
+  };
 }

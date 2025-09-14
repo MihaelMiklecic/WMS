@@ -1,25 +1,20 @@
+// src/pages/Dashboard.tsx
 import * as React from 'react'
 import {
   Box,
   Paper,
   Stack,
   Typography,
-  TextField,
   Button,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Snackbar,
   Alert,
-  CircularProgress,
-  InputAdornment,
-  Divider,
+  Avatar
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import RefreshIcon from '@mui/icons-material/Refresh'
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { api } from '../lib/api'
+import { useUserStore } from '../store/useUserStore'
+import ChatPanel from './components/ChatPanel'
+import { useTranslation } from 'react-i18next'
 
 type StockRow = {
   id: number
@@ -28,11 +23,96 @@ type StockRow = {
   location: { code: string }
 }
 
+const API_BASE = (import.meta as any)?.env?.VITE_API_URL || 'http://localhost:4000'
+const resolveImg = (u?: string | null) =>
+  !u ? undefined : u.startsWith('http') ? u : `${API_BASE}${u}`
+
+function AvatarEditor() {
+  const { t } = useTranslation()
+  const payload = useUserStore((s) => s.payload)
+  const setPayload = (patch: any) =>
+    useUserStore.setState((s) => ({ ...s, payload: { ...(s.payload ?? {}), ...patch } }))
+
+  const fileRef = React.useRef<HTMLInputElement | null>(null)
+  const [uploading, setUploading] = React.useState(false)
+
+  if (!payload?.id) return null // not logged in yet
+
+  const onPick = () => fileRef.current?.click()
+
+  const onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setUploading(true)
+      await api.users.uploadAvatar(payload.id!, file)
+      // refresh /auth/me to get the latest avatarUrl from server
+      const me = await api.auth.me()
+      setPayload(me)
+    } catch (err) {
+      // optionally surface as toast in parent — keeping silent here
+      console.error(err)
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const initials = ((payload.email || 'U')
+    .split(' ')
+    .map((s) => s[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase())
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2 }}>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" flexWrap="wrap">
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar
+            src={resolveImg(payload.avatarUrl)}
+            alt={payload.email || 'U'}
+            sx={{ width: 64, height: 64, fontSize: 20 }}
+          >
+            {initials}
+          </Avatar>
+          <Stack>
+            <Typography variant="subtitle1">{payload.email}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('dashboard.role')}: {t(`roles.${payload.role}`)}
+            </Typography>
+          </Stack>
+        </Stack>
+
+        <Stack direction="row" spacing={1} alignItems="center">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={onChange}
+            style={{ display: 'none' }}
+          />
+          <Button
+            variant="contained"
+            startIcon={<PhotoCamera />}
+            onClick={onPick}
+            disabled={uploading}
+          >
+            {uploading ? t('dashboard.uploading') : t('dashboard.changeAvatar')}
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
+  )
+}
+
 export default function Dashboard() {
+  const { t } = useTranslation()
   const [stock, setStock] = React.useState<StockRow[]>([])
-  const [q, setQ] = React.useState('')
   const [loading, setLoading] = React.useState(false)
-  const [toast, setToast] = React.useState<{ open: boolean; msg: string; sev: 'success' | 'error' }>({ open: false, msg: '', sev: 'success' })
+  const [toast, setToast] = React.useState<{ open: boolean; msg: string; sev: 'success' | 'error' }>(
+    { open: false, msg: '', sev: 'success' }
+  )
 
   React.useEffect(() => {
     load()
@@ -42,108 +122,31 @@ export default function Dashboard() {
     try {
       setLoading(true)
       const data = await api.stock.list(query)
-      // Optional: simple client-side sort by SKU then location
-      data.sort((a: StockRow, b: StockRow) => (a.item.sku + a.location.code).localeCompare(b.item.sku + b.location.code))
+      data.sort((a: StockRow, b: StockRow) =>
+        (a.item.sku + a.location.code).localeCompare(b.item.sku + b.location.code)
+      )
       setStock(data)
     } catch (e: any) {
-      setToast({ open: true, msg: e.message || 'Greška pri učitavanju zaliha', sev: 'error' })
+      setToast({ open: true, msg: e.message || t('errors.loadStockFailed'), sev: 'error' })
     } finally {
       setLoading(false)
     }
   }
 
-  async function search() {
-    await load(q.trim() || undefined)
-  }
-
-  // Enter to search
-  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') search()
-  }
-
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
-      <Typography variant="h4" fontWeight={700}>Dashboard</Typography>
+      <Typography variant="h4" fontWeight={700}>{t('dashboard.title')}</Typography>
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <TextField
-            fullWidth
-            placeholder="Traži po SKU / Naziv / Barkod"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={onKeyDown}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Stack direction="row" spacing={1}>
-            <Button variant="contained" onClick={search} startIcon={<SearchIcon />}>
-              Traži
-            </Button>
-            <Button variant="outlined" onClick={() => { setQ(''); load() }} startIcon={<RefreshIcon />}>
-              Osvježi
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-
-      <Divider />
-
-      <Paper variant="outlined">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, pb: 0 }}>
-          <Typography variant="subtitle1">Rezultati</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {loading ? 'Učitavanje…' : `Ukupno: ${stock.length}`}
-          </Typography>
-        </Box>
-
-        {loading ? (
-          <Box sx={{ display: 'grid', placeItems: 'center', p: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>SKU</TableCell>
-                <TableCell>Naziv</TableCell>
-                <TableCell>Lokacija</TableCell>
-                <TableCell align="right">Količina</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {stock.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>{s.item.sku}</TableCell>
-                  <TableCell>{s.item.name}</TableCell>
-                  <TableCell>{s.location.code}</TableCell>
-                  <TableCell align="right">{s.quantity}</TableCell>
-                </TableRow>
-              ))}
-              {stock.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary' }}>
-                    Nema rezultata.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </Paper>
+      <AvatarEditor />
+      <ChatPanel />
 
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
-        onClose={() => setToast(t => ({ ...t, open: false }))}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={toast.sev} onClose={() => setToast(t => ({ ...t, open: false }))}>
+        <Alert severity={toast.sev} onClose={() => setToast((t) => ({ ...t, open: false }))}>
           {toast.msg}
         </Alert>
       </Snackbar>

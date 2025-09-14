@@ -4,10 +4,24 @@ import bcrypt from "bcryptjs";
 async function main() {
   const adminEmail = "admin@example.com";
   const passwordHash = await bcrypt.hash("admin123", 10);
-  await prisma.user.upsert({
+
+  const admin = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
-    create: { email: adminEmail, passwordHash, role: "admin" }
+    create: { email: adminEmail, passwordHash, role: "admin" },
+  });
+
+  const allPerms = [
+    "items.edit", "locations.edit",
+    "receipts.edit", "receipts.post",
+    "dispatches.edit", "dispatches.post",
+    "stocktakes.edit", "stocktakes.post",
+    "user.change.icon",
+  ];
+
+  await prisma.userPermission.createMany({
+    data: allPerms.map(perm => ({ userId: admin.id, perm })),
+    skipDuplicates: true,
   });
 
   const locA = await prisma.location.upsert({

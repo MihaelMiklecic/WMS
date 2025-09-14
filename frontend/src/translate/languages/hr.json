@@ -1,0 +1,304 @@
+{
+  "common": {
+    "new": "Nova",
+    "edit": "Uredi",
+    "delete": "Obriši",
+    "cancel": "Odustani",
+    "save": "Spremi",
+    "post": "Proknjiži",
+    "documents": "Dokumenti",
+    "number": "Broj",
+    "status": "Status",
+    "lines": "Stavke",
+    "actions": "Akcije",
+    "loading": "Učitavanje…",
+    "selected": "Odabrano: {{count}}",
+    "clearSelection": "Poništi odabir",
+    "addLine": "Dodaj stavku",
+    "name": "Naziv",
+    "location": "Lokacija",
+    "quantity": "Količina",
+    "noLines": "Nema stavki.",
+    "remove": "Ukloni"
+  },
+  "status": {
+    "draft": "Nacrt",
+    "posted": "Proknjiženo"
+  },
+  "errors": {
+    "loadFailed": "Greška pri učitavanju",
+    "saveFailed": "Greška pri spremanju",
+    "postFailed": "Greška pri knjiženju",
+    "deleteFailed": "Greška pri brisanju",
+    "deleteSomeFailed": "Neka brisanja nisu uspjela ({{count}})."
+  },
+  "validation": {
+    "chooseItemLocation": "Odaberite artikl i lokaciju",
+    "qtyNonNegative": "Količina ne može biti negativna",
+    "qtyPositive": "Količina mora biti > 0"
+  },
+  "auth": {
+    "login": {
+      "title": "Prijava",
+      "subtitle": "Dobrodošli natrag",
+      "cta": "Prijava",
+      "noAccount": "Nemate račun?",
+      "forgot": "Zaboravljena lozinka?"
+    },
+    "register": {
+      "title": "Registracija",
+      "subtitle": "Kreirajte novi račun",
+      "cta": "Registriraj se",
+      "success": "Račun kreiran! Preusmjeravam…",
+      "error": "Neuspješna registracija",
+      "haveAccount": "Već imate račun?",
+      "backToLogin": "Povratak na prijavu"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Lozinka",
+      "rememberMe": "Zapamti me"
+    },
+    "aria": {
+      "showPassword": "Prikaži lozinku",
+      "hidePassword": "Sakrij lozinku"
+    },
+    "errors": {
+      "generic": "Došlo je do greške. Pokušajte ponovno."
+    }
+  },
+  "users": {
+    "title": "Korisnici",
+    "new": "Novi korisnik",
+    "edit": "Uredi korisnika",
+    "email": "Email",
+    "password": "Lozinka",
+    "role": "Uloga",
+    "perms": "Dozvole",
+    "helperPerms": "Odaberite dozvole za korisnika",
+    "roles": {
+      "admin": "admin",
+      "user": "user"
+    },
+    "actions": {
+      "create": "Kreiraj",
+      "save": "Spremi",
+      "cancel": "Odustani"
+    },
+    "toast": {
+      "created": "Korisnik kreiran",
+      "updated": "Korisnik ažuriran",
+      "deleted": "Obrisano"
+    },
+    "confirm": {
+      "delete": "Obrisati korisnika?"
+    },
+    "noUsers": "Nema korisnika.",
+    "onlyAdmin": "Samo admin može upravljati korisnicima."
+  },
+  "stocktakes": {
+    "title": "Inventura",
+    "enterNumber": "Unesite broj inventure",
+    "atLeastOneLine": "Dodajte barem jednu stavku",
+    "onlyDraftEditable": "Samo nacrti mogu se urediti",
+    "saved": "Inventura spremljena",
+    "updated": "Inventura ažurirana",
+    "posted": "Inventura proknjižena",
+    "empty": "Još nema inventura.",
+    "aria": { "selectAll": "odaberi sve inventure" },
+    "dialog": {
+      "newTitle": "Nova inventura",
+      "editTitle": "Uredi inventuru"
+    },
+    "form": {
+      "number": "Broj inventure",
+      "item": "Artikl",
+      "location": "Lokacija",
+      "qty": "Broj komada"
+    },
+    "actions": {
+      "save": "Spremi inventuru",
+      "saveChanges": "Spremi izmjene"
+    },
+    "toast": {
+      "deleted": "Inventura(e) obrisane."
+    },
+    "confirm": {
+      "deleteOne": "Obrisati odabranu inventuru?",
+      "deleteMany": "Obrisati {{count}} inventura?",
+      "deletePostedWarning": "Odabrano je {{count}} proknjiženih inventura koje se možda ne mogu obrisati. Nastaviti?"
+    }
+  },
+  "dispatches": {
+    "title": "Otpremnice",
+    "customer": "Kupac",
+    "enterNumber": "Unesite broj otpremnice",
+    "atLeastOneLine": "Dodajte barem jednu stavku",
+    "onlyDraftEditable": "Samo nacrti mogu se urediti",
+    "saved": "Otpremnica spremljena",
+    "updated": "Otpremnica ažurirana",
+    "posted": "Otpremnica proknjižena",
+    "empty": "Još nema otpremnica.",
+    "aria": { "selectAll": "odaberi sve otpremnice" },
+    "dialog": {
+      "newTitle": "Nova otpremnica",
+      "editTitle": "Uredi otpremnicu"
+    },
+    "form": {
+      "number": "Broj otpremnice",
+      "customer": "Kupac",
+      "item": "Artikl",
+      "location": "Lokacija",
+      "qty": "Količina"
+    },
+    "actions": {
+      "save": "Spremi otpremnicu",
+      "saveChanges": "Spremi izmjene"
+    },
+    "toast": {
+      "deleted": "Otpremnica(e) obrisane."
+    },
+    "confirm": {
+      "deleteOne": "Obrisati odabranu otpremnicu?",
+      "deleteMany": "Obrisati {{count}} otpremnica?",
+      "deletePostedWarning": "Odabrano je {{count}} proknjiženih otpremnica koje se možda ne mogu obrisati. Nastaviti?"
+    }
+  },
+  "receipts": {
+    "title": "Primke",
+    "supplier": "Dobavljač",
+    "enterNumber": "Unesite broj primke",
+    "atLeastOneLine": "Dodajte barem jednu stavku",
+    "onlyDraftEditable": "Samo nacrti mogu se urediti",
+    "saved": "Primka spremljena",
+    "updated": "Primka ažurirana",
+    "posted": "Primka proknjižena",
+    "empty": "Još nema primki.",
+    "aria": { "selectAll": "odaberi sve primke" },
+    "dialog": {
+      "newTitle": "Nova primka",
+      "editTitle": "Uredi primku"
+    },
+    "form": {
+      "number": "Broj primke",
+      "supplier": "Dobavljač",
+      "item": "Artikl",
+      "location": "Lokacija",
+      "qty": "Količina"
+    },
+    "actions": {
+      "save": "Spremi primku",
+      "saveChanges": "Spremi izmjene"
+    },
+    "toast": {
+      "deleted": "Primka(e) obrisane."
+    },
+    "confirm": {
+      "deleteOne": "Obrisati odabranu primku?",
+      "deleteMany": "Obrisati {{count}} primki?",
+      "deletePostedWarning": "Odabrano je {{count}} proknjiženih primki koje se možda ne mogu obrisati. Nastaviti?"
+    }
+  },
+  "items": {
+    "title": "Zaliha (Artikli)",
+    "empty": "Nema artikala.",
+    "aria": { "selectAll": "odaberi sve artikle" },
+    "columns": {
+      "image": "Slika",
+      "id": "ID",
+      "sku": "SKU",
+      "name": "Naziv",
+      "barcode": "Barkod",
+      "totalQty": "Količina"
+    },
+    "dialog": { "newTitle": "Dodaj artikl", "editTitle": "Uredi artikl" },
+    "form": { "sku": "SKU", "name": "Naziv", "barcode": "Barkod" },
+    "actions": { "add": "Dodaj", "save": "Spremi" },
+    "toast": {
+      "created": "Artikl dodan",
+      "updated": "Artikl ažuriran",
+      "deleted": "Artikl(i) obrisan(i)."
+    },
+    "confirm": {
+      "deleteOne": "Obrisati odabrani artikl?",
+      "deleteMany": "Obrisati {{count}} odabranih artikala?"
+    },
+    "validation": { "skuNameRequired": "SKU i Naziv su obavezni" }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "role": "Uloga",
+    "changeAvatar": "Promijeni avatar",
+    "uploading": "Učitavanje…"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "items": "Zaliha",
+    "receipts": "Primke",
+    "dispatches": "Otpremnice",
+    "stocktakes": "Inventura",
+    "admin": "Prava"
+  },
+  "app": {
+    "brand": "WMS",
+    "title": "Smart Warehouse",
+    "settings": "Postavke",
+    "profile": "Profil",
+    "logout": "Odjava",
+    "openMenu": "Otvori izbornik",
+    "languageDialogTitle": "Odaberite jezik",
+    "hr": "Hrvatski",
+    "en": "Engleski",
+    "theme": "Tema",
+    "themeLight": "Svijetla",
+    "themeDark": "Tamna"
+  },
+  "adminUsers": {
+    "title": "Korisnici",
+    "newUser": "Novi korisnik",
+    "adminOnly": "Samo admin može upravljati korisnicima.",
+    "noUsers": "Nema korisnika.",
+    "table": {
+      "email": "Email",
+      "role": "Uloga",
+      "perms": "Dozvole",
+      "actions": "Akcije"
+    },
+    "dialog": {
+      "newTitle": "Novi korisnik",
+      "editTitle": "Uredi korisnika",
+      "create": "Kreiraj"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Lozinka",
+      "passwordPlaceholder": "(ne mijenjaj)",
+      "role": "Uloga",
+      "perms": "Dozvole",
+      "permsHelp": "Odaberite dozvole za korisnika"
+    },
+    "toast": {
+      "created": "Korisnik kreiran",
+      "updated": "Korisnik ažuriran",
+      "deleted": "Obrisano"
+    },
+    "confirm": {
+      "delete": "Obrisati korisnika?"
+    }
+  },
+  "roles": {
+    "admin": "admin",
+    "user": "user"
+  },
+  "perms": {
+    "items.edit": "Uređivanje artikala",
+    "locations.edit": "Uređivanje lokacija",
+    "receipts.edit": "Uređivanje primki",
+    "receipts.post": "Knjiženje primki",
+    "dispatches.edit": "Uređivanje otpremnica",
+    "dispatches.post": "Knjiženje otpremnica",
+    "stocktakes.edit": "Uređivanje inventura",
+    "stocktakes.post": "Knjiženje inventura",
+    "user.change.icon": "Promjena avatara korisnika"
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "common": {
+    "new": "New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "post": "Post",
+    "documents": "Documents",
+    "number": "Number",
+    "status": "Status",
+    "lines": "Lines",
+    "actions": "Actions",
+    "loading": "Loading…",
+    "selected": "Selected: {{count}}",
+    "clearSelection": "Clear selection",
+    "addLine": "Add line",
+    "name": "Name",
+    "location": "Location",
+    "quantity": "Quantity",
+    "noLines": "No lines.",
+    "remove": "Remove"
+  },
+  "status": {
+    "draft": "Draft",
+    "posted": "Posted"
+  },
+  "errors": {
+    "loadFailed": "Error loading data",
+    "saveFailed": "Error saving",
+    "postFailed": "Error posting",
+    "deleteFailed": "Error deleting",
+    "deleteSomeFailed": "Some deletions failed ({{count}})."
+  },
+  "validation": {
+    "chooseItemLocation": "Choose item and location",
+    "qtyNonNegative": "Quantity cannot be negative",
+    "qtyPositive": "Quantity must be > 0"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Welcome back",
+      "cta": "Sign in",
+      "noAccount": "Don't have an account?",
+      "forgot": "Forgot password?"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create a new account",
+      "cta": "Register",
+      "success": "Account created! Redirecting…",
+      "error": "Registration failed",
+      "haveAccount": "Already have an account?",
+      "backToLogin": "Back to login"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "rememberMe": "Remember me"
+    },
+    "aria": {
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "users": {
+    "title": "Users",
+    "new": "New user",
+    "edit": "Edit user",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "perms": "Permissions",
+    "helperPerms": "Select user permissions",
+    "roles": {
+      "admin": "admin",
+      "user": "user"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "Deleted"
+    },
+    "confirm": {
+      "delete": "Delete user?"
+    },
+    "noUsers": "No users.",
+    "onlyAdmin": "Only admin can manage users."
+  },
+  "stocktakes": {
+    "title": "Stocktake",
+    "enterNumber": "Enter stocktake number",
+    "atLeastOneLine": "Add at least one line",
+    "onlyDraftEditable": "Only drafts can be edited",
+    "saved": "Stocktake saved",
+    "updated": "Stocktake updated",
+    "posted": "Stocktake posted",
+    "empty": "No stocktakes yet.",
+    "aria": { "selectAll": "select all stocktakes" },
+    "dialog": {
+      "newTitle": "New stocktake",
+      "editTitle": "Edit stocktake"
+    },
+    "form": {
+      "number": "Stocktake number",
+      "item": "Item",
+      "location": "Location",
+      "qty": "Quantity counted"
+    },
+    "actions": {
+      "save": "Save stocktake",
+      "saveChanges": "Save changes"
+    },
+    "toast": {
+      "deleted": "Stocktake(s) deleted."
+    },
+    "confirm": {
+      "deleteOne": "Delete selected stocktake?",
+      "deleteMany": "Delete {{count}} stocktakes?",
+      "deletePostedWarning": "You selected {{count}} posted stocktakes which may not be deletable. Continue?"
+    }
+  },
+  "dispatches": {
+    "title": "Dispatches",
+    "customer": "Customer",
+    "enterNumber": "Enter dispatch number",
+    "atLeastOneLine": "Add at least one line",
+    "onlyDraftEditable": "Only drafts can be edited",
+    "saved": "Dispatch saved",
+    "updated": "Dispatch updated",
+    "posted": "Dispatch posted",
+    "empty": "No dispatches yet.",
+    "aria": { "selectAll": "select all dispatches" },
+    "dialog": {
+      "newTitle": "New dispatch",
+      "editTitle": "Edit dispatch"
+    },
+    "form": {
+      "number": "Dispatch number",
+      "customer": "Customer",
+      "item": "Item",
+      "location": "Location",
+      "qty": "Quantity"
+    },
+    "actions": {
+      "save": "Save dispatch",
+      "saveChanges": "Save changes"
+    },
+    "toast": {
+      "deleted": "Dispatch(es) deleted."
+    },
+    "confirm": {
+      "deleteOne": "Delete selected dispatch?",
+      "deleteMany": "Delete {{count}} dispatches?",
+      "deletePostedWarning": "You selected {{count}} posted dispatches which may not be deletable. Continue?"
+    }
+  },
+  "receipts": {
+    "title": "Receipts",
+    "supplier": "Supplier",
+    "enterNumber": "Enter receipt number",
+    "atLeastOneLine": "Add at least one line",
+    "onlyDraftEditable": "Only drafts can be edited",
+    "saved": "Receipt saved",
+    "updated": "Receipt updated",
+    "posted": "Receipt posted",
+    "empty": "No receipts yet.",
+    "aria": { "selectAll": "select all receipts" },
+    "dialog": {
+      "newTitle": "New receipt",
+      "editTitle": "Edit receipt"
+    },
+    "form": {
+      "number": "Receipt number",
+      "supplier": "Supplier",
+      "item": "Item",
+      "location": "Location",
+      "qty": "Quantity"
+    },
+    "actions": {
+      "save": "Save receipt",
+      "saveChanges": "Save changes"
+    },
+    "toast": {
+      "deleted": "Receipt(s) deleted."
+    },
+    "confirm": {
+      "deleteOne": "Delete selected receipt?",
+      "deleteMany": "Delete {{count}} receipts?",
+      "deletePostedWarning": "You selected {{count}} posted receipts which may not be deletable. Continue?"
+    }
+  },
+  "items": {
+    "title": "Inventory (Items)",
+    "empty": "No items.",
+    "aria": { "selectAll": "select all items" },
+    "columns": {
+      "image": "Image",
+      "id": "ID",
+      "sku": "SKU",
+      "name": "Name",
+      "barcode": "Barcode",
+      "totalQty": "Quantity"
+    },
+    "dialog": { "newTitle": "Add item", "editTitle": "Edit item" },
+    "form": { "sku": "SKU", "name": "Name", "barcode": "Barcode" },
+    "actions": { "add": "Add", "save": "Save" },
+    "toast": {
+      "created": "Item created",
+      "updated": "Item updated",
+      "deleted": "Item(s) deleted."
+    },
+    "confirm": {
+      "deleteOne": "Delete selected item?",
+      "deleteMany": "Delete {{count}} selected items?"
+    },
+    "validation": { "skuNameRequired": "SKU and Name are required" }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "role": "Role",
+    "changeAvatar": "Change avatar",
+    "uploading": "Uploading…"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "items": "Inventory",
+    "receipts": "Receipts",
+    "dispatches": "Dispatches",
+    "stocktakes": "Stocktakes",
+    "admin": "Permissions"
+  },
+  "app": {
+    "brand": "WMS",
+    "title": "Smart Warehouse",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "openMenu": "Open menu",
+    "languageDialogTitle": "Choose language",
+    "hr": "Croatian",
+    "en": "English",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
+  "adminUsers": {
+    "title": "Users",
+    "newUser": "New user",
+    "adminOnly": "Only admin can manage users.",
+    "noUsers": "No users.",
+    "table": {
+      "email": "Email",
+      "role": "Role",
+      "perms": "Permissions",
+      "actions": "Actions"
+    },
+    "dialog": {
+      "newTitle": "New user",
+      "editTitle": "Edit user",
+      "create": "Create"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "(leave unchanged)",
+      "role": "Role",
+      "perms": "Permissions",
+      "permsHelp": "Select user permissions"
+    },
+    "toast": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "Deleted"
+    },
+    "confirm": {
+      "delete": "Delete user?"
+    }
+  },
+  "roles": {
+    "admin": "admin",
+    "user": "user"
+  },
+  "perms": {
+    "items.edit": "Edit items",
+    "locations.edit": "Edit locations",
+    "receipts.edit": "Edit receipts",
+    "receipts.post": "Post receipts",
+    "dispatches.edit": "Edit dispatches",
+    "dispatches.post": "Post dispatches",
+    "stocktakes.edit": "Edit stocktakes",
+    "stocktakes.post": "Post stocktakes",
+    "user.change.icon": "Change user avatar"
+  }
+}

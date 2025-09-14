@@ -1,263 +1,294 @@
 import * as React from 'react'
 import {
-  Box,
-  Paper,
-  Stack,
-  Typography,
-  TextField,
-  Button,
-  Divider,
-  Autocomplete,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  IconButton,
-  Chip,
-  Snackbar,
-  Alert,
+  Box, Paper, Stack, Typography, TextField, Button, Divider,
+  Autocomplete, Table, TableHead, TableRow, TableCell, TableBody,
+  Snackbar, Alert, Chip, ButtonGroup, Toolbar, Checkbox, IconButton, Dialog,
+  DialogTitle, DialogContent, DialogActions, Tooltip
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import SaveIcon from '@mui/icons-material/Save'
-import PostAddIcon from '@mui/icons-material/PostAdd'
+import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CloseIcon from '@mui/icons-material/Close'
+import PostAddIcon from '@mui/icons-material/PostAdd'
+import SaveIcon from '@mui/icons-material/Save'
 import { api } from '../lib/api'
+import { useTranslation } from 'react-i18next'
 
+// --- Types ---
 type Item = { id: number; sku: string; name: string }
 type Location = { id: number; code: string }
-type Stocktake = { id: number; number: string; status: string; lines: any[] }
+type StocktakeLine = { itemId: number; locationId: number; countedQty: number }
+type Stocktake = { id: number; number: string; status: 'draft' | 'posted' | string; lines: StocktakeLine[] }
 
 export default function Inventura() {
+  const { t } = useTranslation()
+
+  // data
   const [rows, setRows] = React.useState<Stocktake[]>([])
-  const [number, setNumber] = React.useState<string>('IN-' + Date.now())
   const [items, setItems] = React.useState<Item[]>([])
   const [locations, setLocations] = React.useState<Location[]>([])
-  const [line, setLine] = React.useState<{ itemId: number | null; locationId: number | null; countedQty: number }>({
-    itemId: null,
-    locationId: null,
-    countedQty: 0,
-  })
-  const [lines, setLines] = React.useState<{ itemId: number; locationId: number; countedQty: number }[]>([])
-  const [toast, setToast] = React.useState<{ open: boolean; msg: string; sev: 'success' | 'error' }>({ open: false, msg: '', sev: 'success' })
+  const [loading, setLoading] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
 
+  // toast
+  const [toast, setToast] = React.useState<{ open: boolean; msg: string; sev: 'success' | 'error' }>(
+    { open: false, msg: '', sev: 'success' }
+  )
+
+  // selection
+  const [selected, setSelected] = React.useState<number[]>([])
+  const isSelected = (id: number) => selected.includes(id)
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) setSelected(rows.map(r => r.id))
+    else setSelected([])
+  }
+  const handleRowSelect = (id: number) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  // dialog (create/edit)
+  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [editingId, setEditingId] = React.useState<number | null>(null)
+  const [number, setNumber] = React.useState('IN-' + Date.now())
+  const [line, setLine] = React.useState<{ itemId: number | null; locationId: number | null; countedQty: number }>({ itemId: null, locationId: null, countedQty: 0 })
+  const [lines, setLines] = React.useState<StocktakeLine[]>([])
+
+  // init
   React.useEffect(() => {
     ;(async () => {
       try {
-        const [st, its, locs] = await Promise.all([
+        setLoading(true)
+        const [docs, its, locs] = await Promise.all([
           api.stocktakes.list(),
           api.items.list(),
           api.locations.list(),
         ])
-        setRows(st)
+        setRows(docs)
         setItems(its)
         setLocations(locs)
       } catch (e: any) {
-        setToast({ open: true, msg: e.message || 'Greška pri učitavanju', sev: 'error' })
+        setToast({ open: true, sev: 'error', msg: e?.message || t('errors.loadFailed') })
+      } finally {
+        setLoading(false)
       }
     })()
-  }, [])
+  }, [t])
+
+  // helpers
+  const selectedItem = items.find(i => i.id === line.itemId) || null
+  const selectedLoc = locations.find(l => l.id === line.locationId) || null
 
   function resetLine() {
     setLine({ itemId: null, locationId: null, countedQty: 0 })
   }
 
+  // line ops (inside dialog)
   function addLine() {
     if (!line.itemId || !line.locationId) {
-      setToast({ open: true, msg: 'Odaberite artikl i lokaciju', sev: 'error' })
+      setToast({ open: true, sev: 'error', msg: t('validation.chooseItemLocation') })
       return
     }
     if (line.countedQty < 0) {
-      setToast({ open: true, msg: 'Količina ne može biti negativna', sev: 'error' })
+      setToast({ open: true, sev: 'error', msg: t('validation.qtyNonNegative') })
       return
     }
     setLines(prev => [...prev, { itemId: line.itemId!, locationId: line.locationId!, countedQty: Number(line.countedQty) }])
     resetLine()
   }
-
   function removeLine(idx: number) {
     setLines(prev => prev.filter((_, i) => i !== idx))
   }
 
-  async function create() {
-    if (!number.trim()) {
-      setToast({ open: true, msg: 'Unesite broj inventure', sev: 'error' })
+  // toolbar actions
+  function onNew() {
+    setEditingId(null)
+    setNumber('IN-' + Date.now())
+    setLines([])
+    resetLine()
+    setDialogOpen(true)
+  }
+
+  function onEdit() {
+    if (selected.length !== 1) return
+    const r = rows.find(x => x.id === selected[0])
+    if (!r) return
+    if (r.status !== 'draft') {
+      setToast({ open: true, sev: 'error', msg: t('stocktakes.onlyDraftEditable') })
       return
     }
-    if (lines.length === 0) {
-      setToast({ open: true, msg: 'Dodajte barem jednu stavku', sev: 'error' })
-      return
+    setEditingId(r.id)
+    setNumber(r.number)
+    setLines(r.lines ?? [])
+    resetLine()
+    setDialogOpen(true)
+  }
+
+  async function onDelete() {
+    if (selected.length === 0) return
+    const affected = rows.filter(r => selected.includes(r.id))
+    const postedCount = affected.filter(r => r.status === 'posted').length
+    if (postedCount > 0) {
+      const proceed = window.confirm(t('stocktakes.confirm.deletePostedWarning', { count: postedCount }))
+      if (!proceed) return
     }
+    const ok = window.confirm(
+      selected.length === 1
+        ? t('stocktakes.confirm.deleteOne')
+        : t('stocktakes.confirm.deleteMany', { count: selected.length })
+    )
+    if (!ok) return
+
     try {
-      const doc = await api.stocktakes.create({ number, lines })
-      setRows(prev => [doc, ...prev])
-      setLines([])
-      setNumber('IN-' + Date.now())
-      setToast({ open: true, msg: 'Inventura spremljena', sev: 'success' })
+      setSaving(true)
+      const ids = [...selected]
+      const results = await Promise.allSettled(ids.map(id => (api.stocktakes as any).delete(id)))
+      const succeeded = ids.filter((_, i) => results[i].status === 'fulfilled')
+      const failed = results.filter(r => r.status === 'rejected').length
+
+      if (succeeded.length) {
+        setRows(prev => prev.filter(r => !succeeded.includes(r.id)))
+        setSelected([])
+      }
+      if (failed) {
+        setToast({ open: true, sev: 'error', msg: t('errors.deleteSomeFailed', { count: failed }) })
+      } else {
+        setToast({ open: true, sev: 'success', msg: t('stocktakes.toast.deleted') })
+      }
     } catch (e: any) {
-      setToast({ open: true, msg: e.message || 'Greška pri spremanju', sev: 'error' })
+      setToast({ open: true, sev: 'error', msg: e?.message || t('errors.deleteFailed') })
+    } finally {
+      setSaving(false)
     }
   }
 
+  // create/update submit from dialog
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!number.trim()) return setToast({ open: true, sev: 'error', msg: t('stocktakes.enterNumber') })
+    if (lines.length === 0) return setToast({ open: true, sev: 'error', msg: t('stocktakes.atLeastOneLine') })
+
+    try {
+      setSaving(true)
+      if (editingId == null) {
+        const doc = await api.stocktakes.create({ number, lines })
+        setRows(prev => [doc, ...prev])
+        setToast({ open: true, sev: 'success', msg: t('stocktakes.saved') })
+      } else {
+        const updated = await (api.stocktakes as any).update(editingId, { number, lines })
+        setRows(prev => prev.map(r => (r.id === editingId ? updated : r)))
+        setToast({ open: true, sev: 'success', msg: t('stocktakes.updated') })
+      }
+      setDialogOpen(false)
+      setEditingId(null)
+    } catch (e: any) {
+      setToast({ open: true, sev: 'error', msg: e?.message || t('errors.saveFailed') })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // post existing
   async function post(id: number) {
     try {
       await api.stocktakes.post(id)
       setRows(await api.stocktakes.list())
-      setToast({ open: true, msg: 'Inventura proknjižena', sev: 'success' })
+      setToast({ open: true, sev: 'success', msg: t('stocktakes.posted') })
+      setSelected(prev => prev.filter(x => x !== id))
     } catch (e: any) {
-      setToast({ open: true, msg: e.message || 'Greška pri knjiženju', sev: 'error' })
+      setToast({ open: true, sev: 'error', msg: e?.message || t('errors.postFailed') })
     }
   }
 
-  const selectedItem = items.find(i => i.id === line.itemId) || null
-  const selectedLoc = locations.find(l => l.id === line.locationId) || null
-
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
-      <Typography variant="h4" fontWeight={700}>Inventura</Typography>
+      <Typography variant="h4" fontWeight={700}>{t('stocktakes.title')}</Typography>
 
-      {/* Entry card */}
-      <Paper variant="outlined" sx={{ p: 2, maxWidth: 1000 }}>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              label="Broj inventure"
-              value={number}
-              onChange={e => setNumber(e.target.value)}
-              fullWidth
-            />
+      {/* Toolbar above documents table */}
+      <Paper variant="outlined" sx={{ p: 1 }}>
+        <Toolbar disableGutters sx={{ px: 1, gap: 1, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <ButtonGroup variant="contained" size="small">
+            <Button startIcon={<AddIcon />} onClick={onNew}>{t('common.new')}</Button>
+            <Button startIcon={<EditIcon />} onClick={onEdit} disabled={selected.length !== 1}>{t('common.edit')}</Button>
+            <Button startIcon={<DeleteIcon />} color="error" onClick={onDelete} disabled={selected.length === 0}>{t('common.delete')}</Button>
+          </ButtonGroup>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('common.selected', { count: selected.length })}</Typography>
+            {selected.length > 0 && (
+              <Tooltip title={t('common.clearSelection')}>
+                <IconButton size="small" onClick={() => setSelected([])}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
-
-          <Divider />
-
-          {/* Line builder */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <Autocomplete
-              options={items}
-              getOptionLabel={(o) => `${o.sku} ${o.name}`}
-              value={selectedItem}
-              onChange={(_, val) => setLine(l => ({ ...l, itemId: val ? val.id : null }))}
-              renderInput={(params) => <TextField {...params} label="Artikl" />}
-              sx={{ minWidth: 280, flex: 1 }}
-            />
-            <Autocomplete
-              options={locations}
-              getOptionLabel={(o) => o.code}
-              value={selectedLoc}
-              onChange={(_, val) => setLine(l => ({ ...l, locationId: val ? val.id : null }))}
-              renderInput={(params) => <TextField {...params} label="Lokacija" />}
-              sx={{ minWidth: 220, flex: 1 }}
-            />
-            <TextField
-              type="number"
-              label="Broj komada"
-              value={line.countedQty}
-              onChange={e => setLine(l => ({ ...l, countedQty: Number(e.target.value) }))}
-              sx={{ width: 160 }}
-              inputProps={{ min: 0 }}
-            />
-            <Button variant="contained" startIcon={<AddIcon />} onClick={addLine}>
-              Dodaj stavku
-            </Button>
-          </Stack>
-
-          {/* Lines table */}
-          <Paper variant="outlined" sx={{ p: 1 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>SKU</TableCell>
-                  <TableCell>Naziv</TableCell>
-                  <TableCell>Lokacija</TableCell>
-                  <TableCell align="right">Količina</TableCell>
-                  <TableCell align="center">Akcije</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {lines.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary' }}>
-                      Nema stavki – dodajte stavku iznad.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  lines.map((ln, idx) => {
-                    const i = items.find(x => x.id === ln.itemId)
-                    const l = locations.find(x => x.id === ln.locationId)
-                    return (
-                      <TableRow key={idx}>
-                        <TableCell>{idx + 1}</TableCell>
-                        <TableCell>{i?.sku}</TableCell>
-                        <TableCell>{i?.name}</TableCell>
-                        <TableCell>{l?.code}</TableCell>
-                        <TableCell align="right">{ln.countedQty}</TableCell>
-                        <TableCell align="center">
-                          <IconButton aria-label="Obriši" onClick={() => removeLine(idx)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </Paper>
-
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button variant="outlined" startIcon={<SaveIcon />} onClick={create}>
-              Spremi inventuru
-            </Button>
-          </Stack>
-        </Stack>
+        </Toolbar>
       </Paper>
 
-      {/* Existing documents */}
+      {/* Documents table */}
       <Box>
-        <Typography variant="h6" sx={{ mb: 1 }}>Dokumenti</Typography>
+        <Typography variant="h6" sx={{ mb: 1 }}>{t('common.documents')}</Typography>
         <Paper variant="outlined">
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Broj</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Stavke</TableCell>
-                <TableCell align="center">Akcije</TableCell>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={selected.length > 0 && selected.length < rows.length}
+                    checked={rows.length > 0 && selected.length === rows.length}
+                    onChange={handleSelectAll}
+                    inputProps={{ 'aria-label': t('stocktakes.aria.selectAll') as string }}
+                  />
+                </TableCell>
+                <TableCell>{t('common.number')}</TableCell>
+                <TableCell>{t('common.status')}</TableCell>
+                <TableCell align="right">{t('common.lines')}</TableCell>
+                <TableCell align="center">{t('common.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(r => (
-                <TableRow key={r.id}>
-                  <TableCell>{r.number}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={r.status}
-                      color={r.status === 'posted' ? 'success' : 'default'}
-                      size="small"
-                      variant={r.status === 'posted' ? 'filled' : 'outlined'}
-                    />
-                  </TableCell>
-                  <TableCell align="right">{r.lines.length}</TableCell>
-                  <TableCell align="center">
-                    {r.status !== 'posted' && (
-                      <Button
+              {rows.map(r => {
+                const sel = isSelected(r.id)
+                return (
+                  <TableRow
+                    key={r.id}
+                    hover
+                    selected={sel}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => handleRowSelect(r.id)}
+                  >
+                    <TableCell padding="checkbox" onClick={(e) => { e.stopPropagation(); handleRowSelect(r.id) }}>
+                      <Checkbox checked={sel} />
+                    </TableCell>
+                    <TableCell>{r.number}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={t(`status.${r.status}`, { defaultValue: r.status })}
+                        color={r.status === 'posted' ? 'success' : 'default'}
                         size="small"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<PostAddIcon />}
-                        onClick={() => post(r.id)}
-                      >
-                        Proknjiži
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                        variant={r.status === 'posted' ? 'filled' : 'outlined'}
+                      />
+                    </TableCell>
+                    <TableCell align="right">{r.lines?.length ?? 0}</TableCell>
+                    <TableCell align="center">
+                      {r.status === 'draft' && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<PostAddIcon />}
+                          onClick={(e) => { e.stopPropagation(); post(r.id) }}
+                        >
+                          {t('common.post')}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
               {rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary' }}>
-                    Još nema inventura.
+                  <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary' }}>
+                    {loading ? t('common.loading') : t('stocktakes.empty')}
                   </TableCell>
                 </TableRow>
               )}
@@ -265,6 +296,101 @@ export default function Inventura() {
           </Table>
         </Paper>
       </Box>
+
+      {/* Create/Edit dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>{editingId == null ? t('stocktakes.dialog.newTitle') : t('stocktakes.dialog.editTitle')}</DialogTitle>
+        <Box component="form" onSubmit={onSubmit}>
+          <DialogContent sx={{ pt: 1 }}>
+            <Stack spacing={2}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField label={t('stocktakes.form.number')} value={number} onChange={e => setNumber(e.target.value)} fullWidth />
+              </Stack>
+
+              <Divider />
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Autocomplete
+                  options={items}
+                  getOptionLabel={(o) => `${o.sku} ${o.name}`}
+                  value={selectedItem}
+                  onChange={(_, v) => setLine(l => ({ ...l, itemId: v ? v.id : null }))}
+                  renderInput={(p) => <TextField {...p} label={t('stocktakes.form.item')} />}
+                  sx={{ minWidth: 280, flex: 1 }}
+                />
+                <Autocomplete
+                  options={locations}
+                  getOptionLabel={(o) => o.code}
+                  value={selectedLoc}
+                  onChange={(_, v) => setLine(l => ({ ...l, locationId: v ? v.id : null }))}
+                  renderInput={(p) => <TextField {...p} label={t('stocktakes.form.location')} />}
+                  sx={{ minWidth: 220, flex: 1 }}
+                />
+                <TextField
+                  type="number"
+                  label={t('stocktakes.form.qty')}
+                  value={line.countedQty}
+                  onChange={e => setLine(l => ({ ...l, countedQty: Number(e.target.value) }))}
+                  sx={{ width: 160 }}
+                  inputProps={{ min: 0 }}
+                />
+                <Button variant="contained" startIcon={<AddIcon />} onClick={addLine}>
+                  {t('common.addLine')}
+                </Button>
+              </Stack>
+
+              <Paper variant="outlined" sx={{ p: 1 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>SKU</TableCell>
+                      <TableCell>{t('common.name')}</TableCell>
+                      <TableCell>{t('common.location')}</TableCell>
+                      <TableCell align="right">{t('common.quantity')}</TableCell>
+                      <TableCell align="center">{t('common.actions')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {lines.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary' }}>
+                          {t('common.noLines')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      lines.map((ln, idx) => {
+                        const i = items.find(x => x.id === ln.itemId)
+                        const l = locations.find(x => x.id === ln.locationId)
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell>{idx + 1}</TableCell>
+                            <TableCell>{i?.sku}</TableCell>
+                            <TableCell>{i?.name}</TableCell>
+                            <TableCell>{l?.code}</TableCell>
+                            <TableCell align="right">{ln.countedQty}</TableCell>
+                            <TableCell align="center">
+                              <Button color="error" size="small" startIcon={<DeleteIcon />} onClick={() => removeLine(idx)}>
+                                {t('common.remove')}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
+            <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={saving}>
+              {editingId == null ? t('stocktakes.actions.save') : t('stocktakes.actions.saveChanges')}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
 
       <Snackbar
         open={toast.open}
